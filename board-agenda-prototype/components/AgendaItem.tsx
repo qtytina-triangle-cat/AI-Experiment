@@ -34,6 +34,7 @@ interface AgendaItemProps {
   }) => void;
   onDelete: () => void;
   onCancel: () => void;
+  onSeed?: () => void;
 }
 
 // Generate item label (a., b., c., etc.)
@@ -51,6 +52,7 @@ export default function AgendaItem({
   onSave,
   onDelete,
   onCancel,
+  onSeed,
 }: AgendaItemProps) {
   if (isEditing) {
     return (
@@ -69,6 +71,7 @@ export default function AgendaItem({
             users={users}
             onSave={onSave}
             onCancel={onCancel}
+            onSeed={onSeed}
           />
         </div>
       </div>
@@ -130,7 +133,7 @@ export default function AgendaItem({
                     className="w-7 h-7 rounded-full bg-slate-200"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white text-xs font-medium">
+                  <div className="w-7 h-7 rounded-full bg-gradient-user flex items-center justify-center text-white text-xs font-medium">
                     {item.assignee.name.charAt(0)}
                   </div>
                 )}

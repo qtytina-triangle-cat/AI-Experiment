@@ -167,6 +167,7 @@ export default function AgendaBuilder() {
                 onSave={(data) => handleUpdateItem(item._id, data)}
                 onDelete={() => handleDeleteItem(item._id)}
                 onCancel={handleCancelEdit}
+                onSeed={handleSeedUsers}
               />
             ))}
           </div>
@@ -174,12 +175,18 @@ export default function AgendaBuilder() {
 
         {/* Add Item Form */}
         {isAddingItem && (
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <AgendaItemForm
-              users={users || []}
-              onSave={handleAddItem}
-              onCancel={handleCancelAdd}
-            />
+          <div className="mt-4 flex gap-4">
+            <div className="w-16 text-right text-sm text-slate-500 pt-2">
+              {calculateStartTime(agendaItems, agendaItems.length)}
+            </div>
+            <div className="flex-1">
+              <AgendaItemForm
+                users={users || []}
+                onSave={handleAddItem}
+                onCancel={handleCancelAdd}
+                onSeed={handleSeedUsers}
+              />
+            </div>
           </div>
         )}
 

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import {
   CheckCircle2,
   Circle,
-  Sparkles,
+  Plus,
   ListTodo,
 } from "lucide-react";
 
@@ -12,6 +13,7 @@ interface NavItemProps {
   active?: boolean;
   hasSubItems?: boolean;
   subItems?: { label: string; active?: boolean }[];
+  href?: string;
 }
 
 function NavItem({
@@ -21,32 +23,37 @@ function NavItem({
   active,
   hasSubItems,
   subItems,
+  href,
 }: NavItemProps) {
+  const content = (
+    <div
+      className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
+        active
+          ? "bg-primary-50 border-l-2 border-primary-600"
+          : "hover:bg-slate-50 border-l-2 border-transparent"
+      }`}
+    >
+      <div className={active ? "text-primary-600" : "text-slate-400"}>
+        {icon}
+      </div>
+      <div className="flex-1">
+        <div
+          className={`text-sm font-medium ${
+            active ? "text-primary-600" : "text-slate-700"
+          }`}
+        >
+          {label}
+        </div>
+        {status && (
+          <div className="text-xs text-slate-500 mt-0.5">{status}</div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div>
-      <div
-        className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
-          active
-            ? "bg-primary-50 border-l-2 border-primary-600"
-            : "hover:bg-slate-50 border-l-2 border-transparent"
-        }`}
-      >
-        <div className={active ? "text-primary-600" : "text-slate-400"}>
-          {icon}
-        </div>
-        <div className="flex-1">
-          <div
-            className={`text-sm font-medium ${
-              active ? "text-primary-600" : "text-slate-700"
-            }`}
-          >
-            {label}
-          </div>
-          {status && (
-            <div className="text-xs text-slate-500 mt-0.5">{status}</div>
-          )}
-        </div>
-      </div>
+      {href ? <Link href={href}>{content}</Link> : content}
       {hasSubItems && subItems && (
         <div className="ml-11 pb-2">
           {subItems.map((item, index) => (
@@ -67,7 +74,11 @@ function NavItem({
   );
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  activePage?: string;
+}
+
+export default function Sidebar({ activePage = "agenda" }: SidebarProps) {
   return (
     <aside className="w-56 bg-white border-r border-slate-200 flex flex-col">
       <nav className="flex-1 py-4">
@@ -75,37 +86,54 @@ export default function Sidebar() {
           icon={<CheckCircle2 className="h-5 w-5" />}
           label="Invitees"
           status="Invites sent · Tracking RSVP"
+          active={activePage === "invitees"}
+          href="/invitees"
         />
         <NavItem
           icon={<CheckCircle2 className="h-5 w-5" />}
           label="Materials"
-          active={true}
+          active={activePage === "materials" || activePage === "agenda"}
           hasSubItems={true}
           subItems={[
             { label: "Board packet" },
-            { label: "Agenda", active: true },
+            { label: "Agenda", active: activePage === "agenda" },
             { label: "Supporting documents" },
           ]}
+          href="/"
         />
         <NavItem
           icon={<Circle className="h-5 w-5" />}
           label="Recording"
           status="Not started"
+          active={activePage === "recording"}
+          href="/recording"
         />
         <NavItem
           icon={<Circle className="h-5 w-5" />}
           label="Minutes"
           status="Not started"
+          active={activePage === "minutes"}
+          href="/minutes"
         />
         <NavItem
-          icon={<Sparkles className="h-5 w-5" />}
+          icon={
+            <div className="h-5 w-5 border-[1.5px] border-dashed border-slate-400 rounded-full flex items-center justify-center">
+              <Plus className="h-3 w-3 text-slate-400" />
+            </div>
+          }
           label="Public page"
-          status="Optional"
+          status="Secondary"
+          active={activePage === "public"}
         />
         <NavItem
-          icon={<Sparkles className="h-5 w-5" />}
+          icon={
+            <div className="h-5 w-5 border-[1.5px] border-dashed border-slate-400 rounded-full flex items-center justify-center">
+              <Plus className="h-3 w-3 text-slate-400" />
+            </div>
+          }
           label="Tasks & polls"
-          status="Optional"
+          status="Secondary"
+          active={activePage === "tasks"}
         />
       </nav>
     </aside>

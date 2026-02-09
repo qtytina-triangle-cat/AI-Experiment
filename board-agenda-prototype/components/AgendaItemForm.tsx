@@ -147,7 +147,7 @@ export default function AgendaItemForm({
                     className="w-5 h-5 rounded-full"
                   />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white text-[10px] font-medium">
+                  <div className="w-5 h-5 rounded-full bg-gradient-user flex items-center justify-center text-white text-[10px] font-medium">
                     {selectedAssignee.name.charAt(0)}
                   </div>
                 )}
@@ -193,7 +193,7 @@ export default function AgendaItemForm({
                       className="w-6 h-6 rounded-full"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white text-xs font-medium">
+                    <div className="w-6 h-6 rounded-full bg-gradient-user flex items-center justify-center text-white text-xs font-medium">
                       {user.name.charAt(0)}
                     </div>
                   )}

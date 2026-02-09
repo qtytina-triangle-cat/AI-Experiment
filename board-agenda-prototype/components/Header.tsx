@@ -1,4 +1,5 @@
 import { Search, Video, Bell } from "lucide-react";
+import Avatar from "./Avatar";
 
 export default function Header() {
   return (
@@ -22,8 +23,8 @@ export default function Header() {
           <Bell className="h-5 w-5 text-slate-500" />
         </button>
         {/* User Avatar */}
-        <button className="h-9 w-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-sm font-medium">
-          T
+        <button>
+          <Avatar initials="T" size="md" />
         </button>
       </div>
     </header>

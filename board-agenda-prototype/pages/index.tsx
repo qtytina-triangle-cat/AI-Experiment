@@ -4,7 +4,7 @@ import MaterialsSection from "@/components/MaterialsSection";
 
 export default function Home() {
   return (
-    <Layout>
+    <Layout activePage="agenda">
       <MeetingHeader />
       <MaterialsSection />
     </Layout>

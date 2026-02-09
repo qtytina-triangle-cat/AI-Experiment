@@ -1,18 +1,22 @@
+import { ReactNode } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import Footer from "./Footer";
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  activePage?: string;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, activePage }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 overflow-auto">{children}</main>
+      <div className="flex flex-1">
+        <Sidebar activePage={activePage} />
+        <main className="flex-1">{children}</main>
       </div>
+      <Footer />
     </div>
   );
 }
