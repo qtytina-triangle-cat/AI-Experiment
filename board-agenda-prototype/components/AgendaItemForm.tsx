@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { ChevronDown, User } from "lucide-react";
+import Avatar from "./Avatar";
 
 interface User {
   _id: Id<"users">;
@@ -21,6 +22,7 @@ interface AgendaItemFormProps {
   users: User[];
   onSave: (data: FormData) => void;
   onCancel: () => void;
+  onSeed?: () => void;
 }
 
 const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
@@ -30,6 +32,7 @@ export default function AgendaItemForm({
   users,
   onSave,
   onCancel,
+  onSeed,
 }: AgendaItemFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
@@ -61,7 +64,10 @@ export default function AgendaItemForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form 
+      onSubmit={handleSubmit} 
+      className="space-y-4 bg-primary-50 p-4 rounded-lg border-2 border-primary-100 shadow-sm"
+    >
       {/* Title Input */}
       <div>
         <label
@@ -135,22 +141,25 @@ export default function AgendaItemForm({
           </label>
           <button
             type="button"
-            onClick={() => setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
+            onClick={() => {
+              const willOpen = !isAssigneeDropdownOpen;
+              setIsAssigneeDropdownOpen(willOpen);
+              if (willOpen && users.length === 0 && onSeed) {
+                onSeed();
+              }
+            }}
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-left flex items-center justify-between bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             {selectedAssignee ? (
               <div className="flex items-center gap-2">
-                {selectedAssignee.avatarUrl ? (
-                  <img
-                    src={selectedAssignee.avatarUrl}
-                    alt={selectedAssignee.name}
-                    className="w-5 h-5 rounded-full"
-                  />
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-gradient-user flex items-center justify-center text-white text-[10px] font-medium">
-                    {selectedAssignee.name.charAt(0)}
-                  </div>
-                )}
+                <Avatar 
+                  src={selectedAssignee.avatarUrl}
+                  initials={selectedAssignee.name.charAt(0)}
+                  size="sm"
+                  variant="blue"
+                  alt={selectedAssignee.name}
+                  className="w-5 h-5 text-[10px]"
+                />
                 <span>{selectedAssignee.name}</span>
               </div>
             ) : (
@@ -186,17 +195,14 @@ export default function AgendaItemForm({
                     assigneeId === user._id ? "bg-primary-50" : ""
                   }`}
                 >
-                  {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.name}
-                      className="w-6 h-6 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full bg-gradient-user flex items-center justify-center text-white text-xs font-medium">
-                      {user.name.charAt(0)}
-                    </div>
-                  )}
+                  <Avatar 
+                    src={user.avatarUrl}
+                    initials={user.name.charAt(0)}
+                    size="sm"
+                    variant="blue"
+                    alt={user.name}
+                    className="w-6 h-6 text-xs"
+                  />
                   <div>
                     <span className="font-medium text-slate-800">
                       {user.name}

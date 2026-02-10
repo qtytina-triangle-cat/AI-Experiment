@@ -1,6 +1,7 @@
 import { Clock, Pencil, Trash2 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import AgendaItemForm from "./AgendaItemForm";
+import Avatar from "./Avatar";
 
 interface User {
   _id: Id<"users">;
@@ -126,17 +127,14 @@ export default function AgendaItem({
             {/* Assignee */}
             {item.assignee && (
               <div className="flex items-center gap-2">
-                {item.assignee.avatarUrl ? (
-                  <img
-                    src={item.assignee.avatarUrl}
-                    alt={item.assignee.name}
-                    className="w-7 h-7 rounded-full bg-slate-200"
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-user flex items-center justify-center text-white text-xs font-medium">
-                    {item.assignee.name.charAt(0)}
-                  </div>
-                )}
+                <Avatar 
+                  src={item.assignee.avatarUrl} 
+                  initials={item.assignee.name.charAt(0)} 
+                  size="sm"
+                  variant="blue"
+                  alt={item.assignee.name}
+                  className="w-7 h-7"
+                />
                 <span className="text-sm text-slate-600">
                   {item.assignee.name}
                 </span>

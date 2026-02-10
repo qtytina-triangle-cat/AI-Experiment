@@ -269,7 +269,7 @@ export function InviteesTable() {
                   <button
                     type="button"
                     onClick={() => toggleAttendance(row.id)}
-                    className="pt-2 pb-2 pl-2 pr-0 rounded-lg hover:bg-slate-100 transition-colors"
+                    className="pt-2 pb-2 pl-0 pr-0 rounded-lg hover:bg-slate-100 transition-colors"
                     aria-label={attendedIds.has(row.id) ? 'Mark as not attended' : 'Mark as attended'}
                   >
                     {attendedIds.has(row.id) ? (
