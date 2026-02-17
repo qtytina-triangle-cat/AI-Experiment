@@ -147,7 +147,7 @@ export default function AgendaBuilder() {
       <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-slate-800">Agenda</h3>
-          {agendaItems.length > 0 && (
+          {optimisticItems.length > 0 && (
             <span className="flex items-center gap-1 text-sm text-green-600">
               <CheckCircle2 className="h-4 w-4" />
               saved
