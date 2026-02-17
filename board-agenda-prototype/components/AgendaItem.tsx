@@ -1,7 +1,7 @@
 import { Clock, Pencil, Trash2 } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import AgendaItemForm from "./AgendaItemForm";
-import Avatar from "./Avatar";
+import Avatar, { getAvatarVariantForUser } from "./Avatar";
 
 interface User {
   _id: Id<"users">;
@@ -125,27 +125,28 @@ export default function AgendaItem({
               </button>
             </div>
 
-            {/* Assignee */}
-            {item.assignee && (
-              <div className="flex items-center gap-2">
-                <Avatar 
-                  src={item.assignee.avatarUrl} 
-                  initials={item.assignee.name.charAt(0)} 
-                  size="sm"
-                  variant="blue"
-                  alt={item.assignee.name}
-                  className="w-7 h-7"
-                />
-                <span className="text-sm text-slate-600">
-                  {item.assignee.name}
-                </span>
-              </div>
-            )}
+            {/* Assignee - fixed width for vertical alignment */}
+            <div className="flex items-center gap-2 w-[124px] min-w-[124px] shrink-0">
+              {item.assignee ? (
+                <>
+                  <Avatar 
+                    initials={item.assignee.name.charAt(0)} 
+                    size="sm"
+                    variant={getAvatarVariantForUser(item.assignee._id)}
+                    alt={item.assignee.name}
+                    className="w-7 h-7 shrink-0"
+                  />
+                  <span className="text-sm text-slate-600 truncate min-w-0" title={item.assignee.name}>
+                    {item.assignee.name}
+                  </span>
+                </>
+              ) : null}
+            </div>
 
-            {/* Duration */}
-            <div className="flex items-center gap-1 text-sm text-slate-500">
-              <Clock className="h-4 w-4" />
-              <span>{item.duration} minutes</span>
+            {/* Duration - fixed width for vertical alignment */}
+            <div className="flex items-center gap-1 text-sm text-slate-500 w-[90px] min-w-[90px] shrink-0">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span className="truncate">{item.duration} min</span>
             </div>
           </div>
         </div>

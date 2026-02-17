@@ -1,5 +1,12 @@
 import React from 'react';
 
+const AVATAR_VARIANTS = ['teal', 'blue', 'purple'] as const;
+
+export function getAvatarVariantForUser(userId: string): (typeof AVATAR_VARIANTS)[number] {
+  const hash = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_VARIANTS[Math.abs(hash) % 3];
+}
+
 interface AvatarProps {
   initials?: string;
   src?: string;

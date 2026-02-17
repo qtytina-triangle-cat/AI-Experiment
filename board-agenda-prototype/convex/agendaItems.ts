@@ -103,6 +103,108 @@ export const remove = mutation({
   },
 });
 
+// Seed demo agenda items
+export const seed = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Check if items already exist
+    const existingItems = await ctx.db.query("agendaItems").collect();
+    if (existingItems.length > 0) {
+      return { message: "Agenda items already seeded", count: existingItems.length };
+    }
+
+    // Get users to assign to agenda items
+    const users = await ctx.db.query("users").collect();
+    if (users.length === 0) {
+      return { message: "Please seed users first", count: 0 };
+    }
+
+    // Demo agenda items for a typical board meeting
+    const demoItems = [
+      {
+        title: "Call to Order & Welcome",
+        description: "Open the meeting, confirm quorum, and welcome all attendees. Review the agenda and meeting objectives.",
+        duration: 5,
+        assigneeId: users.find(u => u.role === "CEO")?._id,
+        order: 0,
+      },
+      {
+        title: "Approval of Previous Minutes",
+        description: "Review and approve the minutes from the last board meeting held on August 15, 2023. Address any corrections or amendments.",
+        duration: 10,
+        assigneeId: users.find(u => u.role === "Secretary")?._id,
+        order: 1,
+      },
+      {
+        title: "Financial Report - Q3 2023",
+        description: "Present Q3 financial statements including revenue, expenses, cash flow, and balance sheet. Discuss year-over-year performance and budget variance analysis.",
+        duration: 20,
+        assigneeId: users.find(u => u.role === "CFO")?._id,
+        order: 2,
+      },
+      {
+        title: "CEO Report & Strategic Updates",
+        description: "Overview of company performance, key initiatives, market conditions, and strategic priorities for Q4. Include updates on product development and customer acquisition.",
+        duration: 25,
+        assigneeId: users.find(u => u.role === "CEO")?._id,
+        order: 3,
+      },
+      {
+        title: "New Market Expansion Proposal",
+        description: "Present and discuss the proposal to expand into the European market. Review market research, financial projections, resource requirements, and timeline.",
+        duration: 30,
+        assigneeId: users.find(u => u.role === "Board Member")?._id,
+        order: 4,
+      },
+      {
+        title: "Governance & Compliance Update",
+        description: "Review compliance status, regulatory changes, risk management updates, and any governance policy revisions.",
+        duration: 15,
+        assigneeId: users.find(u => u.role === "Secretary")?._id,
+        order: 5,
+      },
+      {
+        title: "Executive Compensation Review",
+        description: "Review executive compensation packages, performance metrics, and proposed adjustments for the upcoming fiscal year.",
+        duration: 20,
+        assigneeId: users[users.length - 1]?._id, // Emily Davis
+        order: 6,
+      },
+      {
+        title: "Committee Reports",
+        description: "Brief reports from Audit Committee, Compensation Committee, and Nominating & Governance Committee on recent activities and recommendations.",
+        duration: 15,
+        order: 7,
+      },
+      {
+        title: "New Business & Open Discussion",
+        description: "Address any new business items, questions from board members, and open discussion on strategic matters.",
+        duration: 15,
+        order: 8,
+      },
+      {
+        title: "Executive Session (Board Only)",
+        description: "Private session for board members to discuss sensitive matters without management present.",
+        duration: 20,
+        order: 9,
+      },
+      {
+        title: "Adjournment",
+        description: "Confirm next meeting date and adjourn the meeting.",
+        duration: 5,
+        assigneeId: users.find(u => u.role === "CEO")?._id,
+        order: 10,
+      },
+    ];
+
+    for (const item of demoItems) {
+      await ctx.db.insert("agendaItems", item);
+    }
+
+    return { message: "Agenda items seeded successfully", count: demoItems.length };
+  },
+});
+
 // Reorder agenda items
 export const reorder = mutation({
   args: {

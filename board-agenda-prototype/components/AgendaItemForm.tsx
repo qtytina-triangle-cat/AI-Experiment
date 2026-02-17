@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { ChevronDown, User } from "lucide-react";
-import Avatar from "./Avatar";
+import Avatar, { getAvatarVariantForUser } from "./Avatar";
 
 interface User {
   _id: Id<"users">;
@@ -153,10 +153,9 @@ export default function AgendaItemForm({
             {selectedAssignee ? (
               <div className="flex items-center gap-2">
                 <Avatar 
-                  src={selectedAssignee.avatarUrl}
                   initials={selectedAssignee.name.charAt(0)}
                   size="sm"
-                  variant="blue"
+                  variant={getAvatarVariantForUser(selectedAssignee._id)}
                   alt={selectedAssignee.name}
                   className="w-5 h-5 text-[10px]"
                 />
@@ -196,10 +195,9 @@ export default function AgendaItemForm({
                   }`}
                 >
                   <Avatar 
-                    src={user.avatarUrl}
                     initials={user.name.charAt(0)}
                     size="sm"
-                    variant="blue"
+                    variant={getAvatarVariantForUser(user._id)}
                     alt={user.name}
                     className="w-6 h-6 text-xs"
                   />
