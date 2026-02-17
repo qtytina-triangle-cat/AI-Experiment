@@ -70,6 +70,21 @@ export const sendMessage = mutation({
   },
 });
 
+// Clear all messages in a session
+export const clearMessages = mutation({
+  args: { sessionId: v.id("aiChatSessions") },
+  handler: async (ctx, args) => {
+    const messages = await ctx.db
+      .query("aiChatMessages")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .collect();
+
+    for (const message of messages) {
+      await ctx.db.delete(message._id);
+    }
+  },
+});
+
 // Internal mutation to save assistant message (called from action)
 export const saveAssistantMessage = internalMutation({
   args: {

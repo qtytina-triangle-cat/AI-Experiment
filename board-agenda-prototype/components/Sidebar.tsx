@@ -76,12 +76,17 @@ function NavItem({
 
 interface SidebarProps {
   activePage?: string;
+  isCollapsed?: boolean;
 }
 
-export default function Sidebar({ activePage = "agenda" }: SidebarProps) {
+export default function Sidebar({ activePage = "agenda", isCollapsed = false }: SidebarProps) {
   return (
-    <aside className="w-56 bg-white border-r border-slate-200 flex flex-col">
-      <nav className="flex-1 py-4">
+    <aside 
+      className={`bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out overflow-hidden ${
+        isCollapsed ? "w-0 border-r-0" : "w-56"
+      }`}
+    >
+      <nav className="flex-1 pt-0 pb-4 min-w-[14rem]">
         <NavItem
           icon={<CheckCircle2 className="h-5 w-5" />}
           label="Invitees"

@@ -2,12 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { Sparkles, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Sparkles, Send, ChevronRight, ChevronLeft, Loader2, Trash2 } from "lucide-react";
 
 const PANEL_WIDTH_EXPANDED = 384;
 
-export default function BoardableAI() {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface BoardableAIProps {
+  isExpanded: boolean;
+  onToggle: (expanded: boolean) => void;
+}
+
+export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) {
   const [sessionId, setSessionId] = useState<Id<"aiChatSessions"> | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [isInitializing, setIsInitializing] = useState(true);
@@ -15,6 +19,7 @@ export default function BoardableAI() {
 
   const getOrCreateSession = useMutation(api.aiChat.getOrCreateSession);
   const sendMessage = useMutation(api.aiChat.sendMessage);
+  const clearMessages = useMutation(api.aiChat.clearMessages);
   const messages = useQuery(
     api.aiChat.getMessages,
     sessionId ? { sessionId } : "skip"
@@ -40,6 +45,13 @@ export default function BoardableAI() {
     await sendMessage({ sessionId, content: trimmed });
   };
 
+  const handleClear = async () => {
+    if (!sessionId) return;
+    if (window.confirm("Are you sure you want to clear the chat history?")) {
+      await clearMessages({ sessionId });
+    }
+  };
+
   const isStreaming =
     messages &&
     messages.length > 0 &&
@@ -50,8 +62,8 @@ export default function BoardableAI() {
       {/* Collapsed state: floating tab on the right edge */}
       {!isExpanded && (
         <button
-          onClick={() => setIsExpanded(true)}
-          className="fixed top-1/2 right-0 -translate-y-1/2 z-40 flex items-center gap-2 bg-white border border-r-0 border-slate-200 rounded-l-xl shadow-md hover:shadow-lg hover:bg-slate-50 transition-all duration-300 py-3 pl-3 pr-4"
+          onClick={() => onToggle(true)}
+          className="fixed bottom-20 right-0 z-40 flex items-center gap-2 bg-white border border-r-0 border-slate-200 rounded-l-xl shadow-md hover:shadow-lg hover:bg-slate-50 transition-all duration-300 py-3 pl-3 pr-4"
           style={{
             boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
           }}
@@ -86,7 +98,7 @@ export default function BoardableAI() {
           {/* Header */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 bg-slate-50/50">
             <button
-              onClick={() => setIsExpanded(false)}
+              onClick={() => onToggle(false)}
               className="p-1.5 -ml-1.5 rounded-lg hover:bg-slate-200/60 transition-colors"
               aria-label="Collapse Boardable AI"
             >
@@ -108,6 +120,14 @@ export default function BoardableAI() {
                 Ask anything about board meetings
               </p>
             </div>
+            <button
+              onClick={handleClear}
+              disabled={!messages || messages.length === 0}
+              className="p-1.5 rounded-lg hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Clear chat history"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Messages */}

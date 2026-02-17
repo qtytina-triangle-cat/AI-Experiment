@@ -144,14 +144,6 @@ export default function AgendaBuilder() {
             <p className="text-sm text-slate-500 mb-6">
               Start building your meeting agenda by adding items below.
             </p>
-            {users && users.length === 0 && (
-              <button
-                onClick={handleSeedUsers}
-                className="mb-4 px-4 py-2 text-sm text-primary-600 hover:text-primary-700 underline"
-              >
-                Load sample users for assignees
-              </button>
-            )}
           </div>
         ) : (
           <div className="space-y-1">

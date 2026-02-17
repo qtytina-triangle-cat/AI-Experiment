@@ -40,7 +40,8 @@ interface AgendaItemProps {
 
 // Generate item label (a., b., c., etc.)
 function getItemLabel(index: number): string {
-  return String.fromCharCode(97 + index) + ".";
+  // return String.fromCharCode(97 + index) + ".";
+  return "";
 }
 
 export default function AgendaItem({
@@ -92,7 +93,7 @@ export default function AgendaItem({
           <div className="flex-1">
             {/* Title with label */}
             <h4 className="font-medium text-slate-800">
-              <span className="text-slate-500 mr-1">{getItemLabel(index)}</span>
+              {/* <span className="text-slate-500 mr-1">{getItemLabel(index)}</span> */}
               {item.title}
             </h4>
 
