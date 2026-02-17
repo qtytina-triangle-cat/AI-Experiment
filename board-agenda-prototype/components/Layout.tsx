@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import BoardableAI from "./BoardableAI";
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ export default function Layout({ children, activePage }: LayoutProps) {
         <main className="flex-1">{children}</main>
       </div>
       <Footer />
+      <BoardableAI />
     </div>
   );
 }

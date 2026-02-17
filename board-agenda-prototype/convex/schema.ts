@@ -15,4 +15,16 @@ export default defineSchema({
     avatarUrl: v.optional(v.string()),
     role: v.optional(v.string()),
   }),
+
+  // Boardable AI chat - sessions and messages
+  aiChatSessions: defineTable({
+    createdAt: v.number(),
+  }).index("by_created", ["createdAt"]),
+
+  aiChatMessages: defineTable({
+    sessionId: v.id("aiChatSessions"),
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    content: v.string(),
+    createdAt: v.number(),
+  }).index("by_session", ["sessionId", "createdAt"]),
 });

@@ -4,6 +4,7 @@ An interactive prototype for board admins to manage meeting agendas. Built with 
 
 ## Features
 
+- **Boardable AI** – Collapsible AI assistant panel (right side) powered by ChatGPT for questions about creating board meetings
 - **Create agenda items** with title, description, duration, and assignee
 - **Edit existing items** inline with pre-filled forms
 - **Delete items** with hover-visible controls
@@ -36,18 +37,22 @@ An interactive prototype for board admins to manage meeting agendas. Built with 
    This will prompt you to log in (via GitHub) and create a new Convex project.
    It will automatically create a `.env.local` file with your deployment URL.
 
-3. **Seed sample users:**
+3. **Boardable AI (optional):** To enable the AI assistant, add your OpenAI API key in the Convex dashboard:
+   - Go to [dashboard.convex.dev](https://dashboard.convex.dev) → Your Project → Settings → Environment Variables
+   - Add `OPENAI_API_KEY` with your OpenAI API key
+
+4. **Seed sample users:**
 
    Once the app is running, click the "Load sample users for assignees" link
    in the empty agenda state to populate the users table.
 
-4. **Start the development server:**
+5. **Start the development server:**
 
    ```bash
    npm run dev
    ```
 
-5. **Open the app:**
+6. **Open the app:**
 
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -90,6 +95,7 @@ board-agenda-prototype/
 ├── convex/              # Convex backend
 │   ├── schema.ts        # Database schema
 │   ├── agendaItems.ts   # Agenda CRUD operations
+│   ├── aiChat.ts        # Boardable AI chat (OpenAI integration)
 │   └── users.ts         # User management
 ├── components/          # React components
 │   ├── Layout.tsx       # Main layout wrapper
@@ -100,7 +106,8 @@ board-agenda-prototype/
 │   ├── BoardPacketCard.tsx
 │   ├── AgendaBuilder.tsx    # Main agenda container
 │   ├── AgendaItem.tsx       # Individual item display
-│   └── AgendaItemForm.tsx   # Create/edit form
+│   ├── AgendaItemForm.tsx   # Create/edit form
+│   └── BoardableAI.tsx     # Collapsible AI chat panel
 ├── pages/               # Next.js pages
 │   ├── _app.tsx         # App wrapper with Convex provider
 │   ├── _document.tsx

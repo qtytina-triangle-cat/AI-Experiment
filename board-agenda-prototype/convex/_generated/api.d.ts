@@ -9,6 +9,7 @@
  */
 
 import type * as agendaItems from "../agendaItems.js";
+import type * as aiChat from "../aiChat.js";
 import type * as users from "../users.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agendaItems: typeof agendaItems;
+  aiChat: typeof aiChat;
   users: typeof users;
 }>;
 
