@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { Sparkles, Send, ChevronRight, ChevronLeft, Loader2, Trash2 } from "lucide-react";
+import { Sparkles, Send, ChevronRight, ChevronLeft, Loader2, Trash2, FileText, Calendar, Lightbulb } from "lucide-react";
 
 const PANEL_WIDTH_EXPANDED = 384;
 
@@ -10,6 +10,27 @@ interface BoardableAIProps {
   isExpanded: boolean;
   onToggle: (expanded: boolean) => void;
 }
+
+const QUICK_PROMPTS = [
+  {
+    id: "pull-agenda",
+    icon: FileText,
+    label: "Pull agenda from the previous board meeting",
+    action: "seed",
+  },
+  {
+    id: "structure-agenda",
+    icon: Calendar,
+    label: "Help me structure today's agenda",
+    action: "send",
+  },
+  {
+    id: "best-practices",
+    icon: Lightbulb,
+    label: "Best practices for board meetings",
+    action: "send",
+  },
+];
 
 export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) {
   const [sessionId, setSessionId] = useState<Id<"aiChatSessions"> | null>(null);
@@ -20,6 +41,8 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
   const getOrCreateSession = useMutation(api.aiChat.getOrCreateSession);
   const sendMessage = useMutation(api.aiChat.sendMessage);
   const clearMessages = useMutation(api.aiChat.clearMessages);
+  const seedUsers = useMutation(api.users.seed);
+  const seedAgendaItems = useMutation(api.agendaItems.seed);
   const messages = useQuery(
     api.aiChat.getMessages,
     sessionId ? { sessionId } : "skip"
@@ -49,6 +72,23 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
     if (!sessionId) return;
     if (window.confirm("Are you sure you want to clear the chat history?")) {
       await clearMessages({ sessionId });
+    }
+  };
+
+  const handleQuickPrompt = async (prompt: typeof QUICK_PROMPTS[0]) => {
+    if (!sessionId) return;
+
+    if (prompt.action === "seed") {
+      // Seed the demo agenda
+      await seedUsers();
+      await seedAgendaItems();
+      await sendMessage({
+        sessionId,
+        content: "✅ I've pulled the agenda from the previous board meeting and populated it in the agenda section. The meeting includes 11 items covering: Call to Order, Approval of Minutes, Financial Report, CEO Report, Market Expansion Proposal, Governance Update, Executive Compensation Review, Committee Reports, New Business, Executive Session, and Adjournment.",
+      });
+    } else {
+      // Send as a regular message
+      await sendMessage({ sessionId, content: prompt.label });
     }
   };
 
@@ -137,22 +177,47 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
                 <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
               </div>
             ) : !messages || messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
-                  style={{
-                    background: "linear-gradient(to right, #2dd4bf, #06b6d4)",
-                  }}
-                >
-                  <Sparkles className="h-6 w-6 text-white" />
+              <div className="flex flex-col h-full">
+                {/* Welcome message */}
+                <div className="flex flex-col items-center justify-center pt-8 pb-6 text-center px-4">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
+                    style={{
+                      background: "linear-gradient(to right, #2dd4bf, #06b6d4)",
+                    }}
+                  >
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <p className="text-base font-bold text-slate-700 mb-2">
+                    How can I help?
+                  </p>
+                  <p className="text-xs text-slate-500 max-w-[240px]">
+                    Ask me about structuring agendas, best practices, time
+                    allocation, or meeting preparation.
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-slate-700 mb-1">
-                  How can I help?
-                </p>
-                <p className="text-xs text-slate-500 max-w-[240px]">
-                  Ask me about structuring agendas, best practices, time
-                  allocation, or meeting preparation.
-                </p>
+
+                {/* Quick prompts */}
+                <div className="px-4 space-y-2">
+                  <p className="text-xs font-medium text-slate-500 mb-3">Quick actions</p>
+                  {QUICK_PROMPTS.map((prompt) => {
+                    const Icon = prompt.icon;
+                    return (
+                      <button
+                        key={prompt.id}
+                        onClick={() => handleQuickPrompt(prompt)}
+                        className="w-full flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-left group"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-slate-200 shrink-0">
+                          <Icon className="h-4 w-4 text-slate-600" />
+                        </div>
+                        <span className="text-sm text-slate-700 leading-relaxed">
+                          {prompt.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <>
