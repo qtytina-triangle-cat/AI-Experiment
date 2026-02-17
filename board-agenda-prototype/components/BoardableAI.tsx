@@ -40,6 +40,8 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
 
   const getOrCreateSession = useMutation(api.aiChat.getOrCreateSession);
   const sendMessage = useMutation(api.aiChat.sendMessage);
+  const addUserMessage = useMutation(api.aiChat.addUserMessage);
+  const addAssistantMessage = useMutation(api.aiChat.addAssistantMessage);
   const clearMessages = useMutation(api.aiChat.clearMessages);
   const seedUsers = useMutation(api.users.seed);
   const seedAgendaItems = useMutation(api.agendaItems.seed);
@@ -79,15 +81,23 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
     if (!sessionId) return;
 
     if (prompt.action === "seed") {
+      // First, add the user message (the prompt they clicked)
+      await addUserMessage({
+        sessionId,
+        content: prompt.label,
+      });
+      
       // Seed the demo agenda
       await seedUsers();
       await seedAgendaItems();
-      await sendMessage({
+      
+      // Then add the AI confirmation response
+      await addAssistantMessage({
         sessionId,
-        content: "✅ I've pulled the agenda from the previous board meeting and populated it in the agenda section. The meeting includes 11 items covering: Call to Order, Approval of Minutes, Financial Report, CEO Report, Market Expansion Proposal, Governance Update, Executive Compensation Review, Committee Reports, New Business, Executive Session, and Adjournment.",
+        content: "✅ Done! I've populated the agenda section with the previous board meeting items. The agenda now includes 11 items covering: Call to Order, Approval of Minutes, Financial Report, CEO Report, Market Expansion Proposal, Governance Update, Executive Compensation Review, Committee Reports, New Business, Executive Session, and Adjournment.",
       });
     } else {
-      // Send as a regular message
+      // Send as a regular message (will trigger AI response)
       await sendMessage({ sessionId, content: prompt.label });
     }
   };

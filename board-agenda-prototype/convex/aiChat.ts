@@ -85,6 +85,38 @@ export const clearMessages = mutation({
   },
 });
 
+// Add a user message without triggering AI (for quick actions)
+export const addUserMessage = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("aiChatMessages", {
+      sessionId: args.sessionId,
+      role: "user",
+      content: args.content,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+// Add a predefined assistant message (for quick actions that don't need AI)
+export const addAssistantMessage = mutation({
+  args: {
+    sessionId: v.id("aiChatSessions"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("aiChatMessages", {
+      sessionId: args.sessionId,
+      role: "assistant",
+      content: args.content,
+      createdAt: Date.now(),
+    });
+  },
+});
+
 // Internal mutation to save assistant message (called from action)
 export const saveAssistantMessage = internalMutation({
   args: {

@@ -13,7 +13,7 @@ export default function Layout({ children, activePage }: LayoutProps) {
   const [isAIExpanded, setIsAIExpanded] = useState(true);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
       <Header />
       <div 
         className="flex flex-1 overflow-hidden transition-all duration-300 ease-in-out"

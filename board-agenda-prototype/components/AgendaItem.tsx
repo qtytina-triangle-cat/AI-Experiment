@@ -1,4 +1,4 @@
-import { Clock, Pencil, Trash2 } from "lucide-react";
+import { Clock, Pencil, Trash2, GripVertical } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import AgendaItemForm from "./AgendaItemForm";
 import Avatar, { getAvatarVariantForUser } from "./Avatar";
@@ -36,6 +36,12 @@ interface AgendaItemProps {
   onDelete: () => void;
   onCancel: () => void;
   onSeed?: () => void;
+  /** Drag handle - only used when not editing */
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
+  isDragging?: boolean;
 }
 
 // Generate item label (a., b., c., etc.)
@@ -55,11 +61,21 @@ export default function AgendaItem({
   onDelete,
   onCancel,
   onSeed,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragging,
 }: AgendaItemProps) {
   if (isEditing) {
     return (
-      <div className="flex gap-4">
-        <div className="w-16 text-right text-sm text-slate-500 pt-2">
+      <div
+        className="flex gap-4"
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      >
+        <div className="w-6 shrink-0" aria-hidden />
+        <div className="w-16 text-right text-sm text-slate-500 pt-2 shrink-0">
           {startTime}
         </div>
         <div className="flex-1">
@@ -80,10 +96,34 @@ export default function AgendaItem({
     );
   }
 
+  const handleDragStart = (e: React.DragEvent) => {
+    const row = e.currentTarget.closest("[data-agenda-item-row]");
+    if (row instanceof HTMLElement) {
+      const rect = row.getBoundingClientRect();
+      e.dataTransfer.setDragImage(row, e.clientX - rect.left, e.clientY - rect.top);
+    }
+    onDragStart?.(e);
+  };
+
   return (
-    <div className="flex gap-4 group py-2 hover:bg-slate-50 rounded-lg px-2 -mx-2 transition-colors">
+    <div
+      data-agenda-item-row
+      className={`flex items-start gap-4 group py-2 hover:bg-slate-50 rounded-lg px-2 -mx-2 transition-colors ${isDragging ? "opacity-50" : ""}`}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
+      {/* Grab handle - aligned to top, slate-300 per style guide */}
+      <div
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={onDragEnd}
+        className="flex items-start w-6 -ml-1 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 touch-none shrink-0 pt-0.5"
+        title="Drag to reorder"
+      >
+        <GripVertical className="h-5 w-5" />
+      </div>
       {/* Time Column */}
-      <div className="w-16 text-right text-sm text-slate-500 pt-0.5">
+      <div className="w-16 text-right text-sm text-slate-500 pt-0.5 shrink-0">
         {startTime}
       </div>
 

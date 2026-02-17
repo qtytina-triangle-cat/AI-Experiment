@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -33,9 +33,21 @@ export default function AgendaBuilder() {
   const createItem = useMutation(api.agendaItems.create);
   const updateItem = useMutation(api.agendaItems.update);
   const deleteItem = useMutation(api.agendaItems.remove);
+  const reorderItem = useMutation(api.agendaItems.reorder);
 
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<Id<"agendaItems"> | null>(null);
+  const [draggingItemId, setDraggingItemId] = useState<Id<"agendaItems"> | null>(null);
+  
+  // Optimistic UI state
+  const [optimisticItems, setOptimisticItems] = useState<typeof agendaItems>(undefined);
+
+  // Sync optimistic state with server state
+  useEffect(() => {
+    if (agendaItems) {
+      setOptimisticItems(agendaItems);
+    }
+  }, [agendaItems]);
 
   // Seed users on first load if needed
   const handleSeedUsers = async () => {
@@ -81,8 +93,41 @@ export default function AgendaBuilder() {
     setIsAddingItem(false);
   };
 
+  const handleDragStart = (itemId: Id<"agendaItems">) => (e: React.DragEvent) => {
+    setDraggingItemId(itemId);
+    e.dataTransfer.setData("application/x-agenda-item-id", itemId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (targetIndex: number) => async (e: React.DragEvent) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData("application/x-agenda-item-id") as Id<"agendaItems">;
+    if (!itemId || !optimisticItems) return;
+    
+    setDraggingItemId(null);
+    const currentIndex = optimisticItems.findIndex((i) => i._id === itemId);
+    if (currentIndex === -1 || currentIndex === targetIndex) return;
+
+    // Optimistic update
+    const newItems = [...optimisticItems];
+    const [movedItem] = newItems.splice(currentIndex, 1);
+    newItems.splice(targetIndex, 0, movedItem);
+    setOptimisticItems(newItems);
+
+    await reorderItem({ itemId, newOrder: targetIndex });
+  };
+
+  const handleDragEnd = () => {
+    setDraggingItemId(null);
+  };
+
   // Loading state
-  if (agendaItems === undefined) {
+  if (optimisticItems === undefined) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="animate-pulse">
@@ -121,7 +166,7 @@ export default function AgendaBuilder() {
 
       {/* Agenda Items */}
       <div className="p-6 agenda-scroll max-h-[600px] overflow-y-auto">
-        {agendaItems.length === 0 && !isAddingItem ? (
+        {optimisticItems.length === 0 && !isAddingItem ? (
           <div className="text-center py-12">
             <div className="text-slate-400 mb-4">
               <svg
@@ -147,12 +192,12 @@ export default function AgendaBuilder() {
           </div>
         ) : (
           <div className="space-y-1">
-            {agendaItems.map((item, index) => (
+            {optimisticItems.map((item, index) => (
               <AgendaItem
                 key={item._id}
                 item={item}
                 index={index}
-                startTime={calculateStartTime(agendaItems, index)}
+                startTime={calculateStartTime(optimisticItems, index)}
                 isEditing={editingItemId === item._id}
                 users={users || []}
                 onEdit={() => handleEditItem(item._id)}
@@ -160,6 +205,11 @@ export default function AgendaBuilder() {
                 onDelete={() => handleDeleteItem(item._id)}
                 onCancel={handleCancelEdit}
                 onSeed={handleSeedUsers}
+                onDragStart={handleDragStart(item._id)}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop(index)}
+                onDragEnd={handleDragEnd}
+                isDragging={draggingItemId === item._id}
               />
             ))}
           </div>
@@ -169,7 +219,7 @@ export default function AgendaBuilder() {
         {isAddingItem && (
           <div className="mt-4 flex gap-4">
             <div className="w-16 text-right text-sm text-slate-500 pt-2">
-              {calculateStartTime(agendaItems, agendaItems.length)}
+              {calculateStartTime(optimisticItems, optimisticItems.length)}
             </div>
             <div className="flex-1">
               <AgendaItemForm
