@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -30,6 +30,7 @@ export default function AgendaBuilder() {
   const agendaItems = useQuery(api.agendaItems.get);
   const users = useQuery(api.users.list);
   const seedUsers = useMutation(api.users.seed);
+  const seedStarter = useMutation(api.agendaItems.seedStarter);
   const createItem = useMutation(api.agendaItems.create);
   const updateItem = useMutation(api.agendaItems.update);
   const deleteItem = useMutation(api.agendaItems.remove);
@@ -38,6 +39,7 @@ export default function AgendaBuilder() {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<Id<"agendaItems"> | null>(null);
   const [draggingItemId, setDraggingItemId] = useState<Id<"agendaItems"> | null>(null);
+  const hasSeededStarter = useRef(false);
   
   // Optimistic UI state
   const [optimisticItems, setOptimisticItems] = useState<typeof agendaItems>(undefined);
@@ -48,6 +50,18 @@ export default function AgendaBuilder() {
       setOptimisticItems(agendaItems);
     }
   }, [agendaItems]);
+
+  // Seed 3 starter agenda items when beginning state (empty agenda)
+  useEffect(() => {
+    if (
+      agendaItems !== undefined &&
+      agendaItems.length === 0 &&
+      !hasSeededStarter.current
+    ) {
+      hasSeededStarter.current = true;
+      seedStarter().catch(() => {});
+    }
+  }, [agendaItems, seedStarter]);
 
   // Seed users on first load if needed
   const handleSeedUsers = async () => {

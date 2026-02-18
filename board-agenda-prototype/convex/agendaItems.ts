@@ -103,6 +103,66 @@ export const remove = mutation({
   },
 });
 
+// Seed 3 starter agenda items for beginning/empty state (best practices)
+export const seedStarter = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existingItems = await ctx.db.query("agendaItems").collect();
+    if (existingItems.length > 0) {
+      return { message: "Agenda already has items", count: existingItems.length };
+    }
+
+    // Seed users first if needed
+    let users = await ctx.db.query("users").collect();
+    if (users.length === 0) {
+      const sampleUsers = [
+        { name: "Anna Zhou", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anna", role: "Board Member" },
+        { name: "Michael Chen", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael", role: "CEO" },
+        { name: "Sarah Johnson", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah", role: "CFO" },
+        { name: "David Williams", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=David", role: "Secretary" },
+        { name: "Emily Davis", avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily", role: "Board Member" },
+      ];
+      for (const user of sampleUsers) {
+        await ctx.db.insert("users", user);
+      }
+      users = await ctx.db.query("users").collect();
+    }
+
+    const ceo = users.find((u) => u.role === "CEO");
+    const secretary = users.find((u) => u.role === "Secretary");
+
+    const starterItems = [
+      {
+        title: "Call to Order & Welcome",
+        description: "Open the meeting, confirm quorum, and welcome all attendees. Review the agenda and meeting objectives.",
+        duration: 5,
+        assigneeId: ceo?._id,
+        order: 0,
+      },
+      {
+        title: "Approval of Previous Meeting Minutes",
+        description: "Review and approve the minutes from the last board meeting. Address any corrections or amendments before formal approval.",
+        duration: 10,
+        assigneeId: secretary?._id,
+        order: 1,
+      },
+      {
+        title: "Chair/CEO Report",
+        description: "Executive summary of organizational performance, key initiatives, and strategic updates. Opportunity for board discussion and questions.",
+        duration: 15,
+        assigneeId: ceo?._id,
+        order: 2,
+      },
+    ];
+
+    for (const item of starterItems) {
+      await ctx.db.insert("agendaItems", item);
+    }
+
+    return { message: "Starter agenda seeded successfully", count: starterItems.length };
+  },
+});
+
 // Seed demo agenda items
 export const seed = mutation({
   args: {},
