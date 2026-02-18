@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Sparkles, Send, ChevronRight, ChevronLeft, Loader2, Trash2, FileText, Calendar, Lightbulb } from "lucide-react";
+import Modal from "./Modal";
 
 const PANEL_WIDTH_EXPANDED = 384;
 
@@ -36,6 +37,7 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
   const [sessionId, setSessionId] = useState<Id<"aiChatSessions"> | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const getOrCreateSession = useMutation(api.aiChat.getOrCreateSession);
@@ -45,6 +47,7 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
   const clearMessages = useMutation(api.aiChat.clearMessages);
   const seedUsers = useMutation(api.users.seed);
   const seedAgendaItems = useMutation(api.agendaItems.seed);
+  const agendaItems = useQuery(api.agendaItems.get);
   const messages = useQuery(
     api.aiChat.getMessages,
     sessionId ? { sessionId } : "skip"
@@ -78,27 +81,77 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
   };
 
   const handleQuickPrompt = async (prompt: typeof QUICK_PROMPTS[0]) => {
+    console.log("Quick prompt clicked:", prompt.label, "Session ID:", sessionId);
+    if (!sessionId) {
+      console.error("No session ID available");
+      return;
+    }
+
+    // Check if there are existing agenda items for seed action
+    if (prompt.action === "seed" && agendaItems && agendaItems.length > 0) {
+      setShowConfirmModal(true);
+      return;
+    }
+
+    await executeQuickPrompt(prompt);
+  };
+
+  const executeQuickPrompt = async (prompt: typeof QUICK_PROMPTS[0]) => {
     if (!sessionId) return;
 
-    if (prompt.action === "seed") {
-      // First, add the user message (the prompt they clicked)
-      await addUserMessage({
-        sessionId,
-        content: prompt.label,
-      });
-      
-      // Seed the demo agenda
-      await seedUsers();
-      await seedAgendaItems();
-      
-      // Then add the AI confirmation response
-      await addAssistantMessage({
-        sessionId,
-        content: "✅ Done! I've populated the agenda section with the previous board meeting items. The agenda now includes 11 items covering: Call to Order, Approval of Minutes, Financial Report, CEO Report, Market Expansion Proposal, Governance Update, Executive Compensation Review, Committee Reports, New Business, Executive Session, and Adjournment.",
-      });
-    } else {
-      // Send as a regular message (will trigger AI response)
-      await sendMessage({ sessionId, content: prompt.label });
+    try {
+      if (prompt.action === "seed") {
+        console.log("Starting seed action...");
+        
+        // First, add the user message (the prompt they clicked)
+        console.log("Adding user message...");
+        const userMsgResult = await addUserMessage({
+          sessionId,
+          content: prompt.label,
+        });
+        console.log("User message added:", userMsgResult);
+        
+        // Seed the demo agenda
+        console.log("Seeding users...");
+        const usersResult = await seedUsers();
+        console.log("Users seeded:", usersResult);
+        
+        console.log("Seeding agenda items...");
+        const agendaResult = await seedAgendaItems();
+        console.log("Agenda items seeded:", agendaResult);
+        
+        // Then add the AI confirmation response
+        console.log("Adding AI response...");
+        const aiMsgResult = await addAssistantMessage({
+          sessionId,
+          content: "✅ Done! I've populated the agenda section with the previous board meeting items. The agenda now includes 11 items covering: Call to Order, Approval of Minutes, Financial Report, CEO Report, Market Expansion Proposal, Governance Update, Executive Compensation Review, Committee Reports, New Business, Executive Session, and Adjournment.",
+        });
+        console.log("AI message added:", aiMsgResult);
+        console.log("Seed action completed successfully!");
+      } else {
+        // Send as a regular message (will trigger AI response)
+        console.log("Sending regular message...");
+        await sendMessage({ sessionId, content: prompt.label });
+      }
+    } catch (error) {
+      console.error("Error handling quick prompt:", error);
+      // Try to add an error message to the chat if possible
+      try {
+        await sendMessage({
+          sessionId,
+          content: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        });
+      } catch (e) {
+        console.error("Failed to send error message:", e);
+      }
+    }
+  };
+
+  const handleConfirmSeed = async () => {
+    setShowConfirmModal(false);
+    const seedPrompt = QUICK_PROMPTS.find((p) => p.action === "seed");
+    if (seedPrompt) {
+      await executeQuickPrompt(seedPrompt);
     }
   };
 
@@ -290,6 +343,18 @@ export default function BoardableAI({ isExpanded, onToggle }: BoardableAIProps) 
           </form>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmSeed}
+        title="Replace Existing Agenda?"
+        message="This will discard all current agenda items and load the previous meeting's agenda. This action cannot be undone."
+        confirmText="Replace Agenda"
+        cancelText="Cancel"
+        variant="warning"
+      />
     </>
   );
 }

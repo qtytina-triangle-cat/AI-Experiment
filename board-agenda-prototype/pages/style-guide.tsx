@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Head from 'next/head';
 import designSystem from '../Design_guidelines.json';
 import { 
   Search, Video, Bell, CheckCircle2, Printer, MoreVertical, 
   Plus, Clock, Pencil, Trash2, ChevronDown, User, 
   FileText, ExternalLink, Send, Circle, Sparkles, 
-  ListTodo, Link2, Monitor 
+  ListTodo, Link2, Monitor, AlertTriangle, X 
 } from 'lucide-react';
 
 const IconMap: Record<string, React.ComponentType<any>> = {
@@ -82,6 +82,50 @@ import MeetingHeader from '../components/MeetingHeader';
 import SecondaryHeader from '../components/SecondaryHeader';
 import Table from '../components/Table';
 import Avatar from '../components/Avatar';
+import Modal from '../components/Modal';
+
+// Modal Demo Component for Style Guide
+interface ModalDemoProps {
+  title: string;
+  variant: 'warning' | 'danger' | 'info';
+  modalTitle: string;
+  modalMessage: string;
+  confirmText: string;
+}
+
+function ModalDemo({
+  title,
+  variant,
+  modalTitle,
+  modalMessage,
+  confirmText,
+}: ModalDemoProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider">{title}</h4>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
+      >
+        Show Modal
+      </button>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onConfirm={() => {
+          setIsOpen(false);
+          alert('Confirmed!');
+        }}
+        title={modalTitle}
+        message={modalMessage}
+        confirmText={confirmText}
+        variant={variant}
+      />
+    </div>
+  );
+}
 
 export default function StyleGuide() {
   return (
@@ -560,6 +604,41 @@ export default function StyleGuide() {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-700">Table</h3>
             <Table />
+          </div>
+
+          {/* Modal */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium text-slate-700">Modal</h3>
+            <p className="text-sm text-slate-600">Confirmation dialogs for critical actions</p>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Warning Variant */}
+              <ModalDemo
+                title="Warning Modal"
+                variant="warning"
+                modalTitle="Replace Existing Agenda?"
+                modalMessage="This will discard all current agenda items and load the previous meeting's agenda. This action cannot be undone."
+                confirmText="Replace Agenda"
+              />
+
+              {/* Danger Variant */}
+              <ModalDemo
+                title="Danger Modal"
+                variant="danger"
+                modalTitle="Delete All Items?"
+                modalMessage="This will permanently delete all agenda items. This action cannot be undone."
+                confirmText="Delete All"
+              />
+
+              {/* Info Variant */}
+              <ModalDemo
+                title="Info Modal"
+                variant="info"
+                modalTitle="Save Changes?"
+                modalMessage="You have unsaved changes. Would you like to save them before continuing?"
+                confirmText="Save Changes"
+              />
+            </div>
           </div>
         </section>
         <section className="space-y-6">

@@ -163,14 +163,26 @@ export const seedStarter = mutation({
   },
 });
 
+// Clear all agenda items
+export const clearAll = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const items = await ctx.db.query("agendaItems").collect();
+    for (const item of items) {
+      await ctx.db.delete(item._id);
+    }
+    return { message: "Cleared all agenda items", count: items.length };
+  },
+});
+
 // Seed demo agenda items
 export const seed = mutation({
   args: {},
   handler: async (ctx) => {
-    // Check if items already exist
+    // Clear existing items first
     const existingItems = await ctx.db.query("agendaItems").collect();
-    if (existingItems.length > 0) {
-      return { message: "Agenda items already seeded", count: existingItems.length };
+    for (const item of existingItems) {
+      await ctx.db.delete(item._id);
     }
 
     // Get users to assign to agenda items
